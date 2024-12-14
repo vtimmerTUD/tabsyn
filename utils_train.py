@@ -47,7 +47,9 @@ def preprocess(dataset_path, task_type = 'binclass', inverse = False, cat_encodi
         X_cat = dataset.X_cat
 
         X_train_num, X_test_num = X_num['train'], X_num['test']
-        X_train_cat, X_test_cat = X_cat['train'], X_cat['test']
+        X_train_cat, X_test_cat = X_cat['train'], X_cat['test'] #TODO: made changes
+        #X_train_cat = None
+        #X_test_cat = None
         
         categories = src.get_categories(X_train_cat)
         d_numerical = X_train_num.shape[1]
@@ -79,11 +81,19 @@ def update_ema(target_params, source_params, rate=0.999):
         target.detach().mul_(rate).add_(source.detach(), alpha=1 - rate)
 
 
-
+"""
 def concat_y_to_X(X, y):
     if X is None:
         return y.reshape(-1, 1)
-    return np.concatenate([y.reshape(-1, 1), X], axis=1)
+    return np.concatenate([y.reshape(-1, 1), X], axis=1) """
+
+def concat_y_to_X(X, y, num_channels=1):
+    # Reshape y into a 2D array (n_samples, num_channels)
+    y = y.reshape(-1, num_channels)
+    if X is None:
+            return y
+    # Concatenate along axis 1 (features dimension)
+    return np.concatenate([y, X], axis=1)
 
 
 def make_dataset(
@@ -106,7 +116,7 @@ def make_dataset(
                 X_num[split] = X_num_t
             if X_cat is not None:
                 if concat:
-                    X_cat_t = concat_y_to_X(X_cat_t, y_t)
+                    X_cat_t = concat_y_to_X(X_cat_t, y_t, 8) #TODO: remove hardcode
                 X_cat[split] = X_cat_t  
             if y is not None:
                 y[split] = y_t
@@ -121,7 +131,7 @@ def make_dataset(
 
             if X_num is not None:
                 if concat:
-                    X_num_t = concat_y_to_X(X_num_t, y_t)
+                    X_num_t = concat_y_to_X(X_num_t, y_t, 8) #TODO remove hardcode
                 X_num[split] = X_num_t
             if X_cat is not None:
                 X_cat[split] = X_cat_t
